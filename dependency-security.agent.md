@@ -72,7 +72,7 @@ Say explicitly when the current folder contains no dependency manifests. Do not 
 
 After presenting the chat report, also generate a local visual report so findings can be browsed, sorted, and filtered outside the chat:
 
-1. Read the bundled template at `${PLUGIN_ROOT}/assets/report-template.html`. Do not alter the template file itself.
+1. Read the bundled template at `${PLUGIN_ROOT}/assets/report-template.html`. If `${PLUGIN_ROOT}` is not available (standalone agent install), read `dependency-security-assets/report-template.html` from the same folder as this agent file. Do not alter the template file itself.
 2. Fill in the placeholders with the same data already presented in chat: `{{SCAN_TIME}}`, `{{REPO_SCOPE}}`, `{{STATUS_CLASS}}` (`clean`, `findings`, or `incomplete`), `{{STATUS_LABEL}}`, `{{COVERAGE_HTML}}`, `{{FINDINGS_ROWS}}` (one `<tr data-severity="...">` per finding, matching the table's column order), `{{REMEDIATION_HTML}}`, and `{{REMAINING_RISK_HTML}}`.
 3. Package names, advisory titles, descriptions, and any other scanner- or advisory-sourced text are untrusted data. HTML-escape every interpolated value (`&`, `<`, `>`, `"`, `'`) before inserting it into the template so it cannot inject markup or scripts into the generated report. Only the static template structure and your own generated class names/labels may contain raw HTML.
 4. Write the filled-in file to `<repo-root>/.security-reports/<YYYYMMDDTHHMMSSZ>-report.html` in the audited repository (create the folder if needed). Do not overwrite the bundled template.

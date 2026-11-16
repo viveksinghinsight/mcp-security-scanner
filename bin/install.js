@@ -44,7 +44,13 @@ if (fs.existsSync(target) && !args.includes("--force")) {
   process.exit(1);
 }
 
+const templateSource = path.join(__dirname, "..", "assets", "report-template.html");
+const templateDir = path.join(targetDir, "dependency-security-assets");
+
 fs.mkdirSync(targetDir, { recursive: true });
 fs.copyFileSync(source, target);
+fs.mkdirSync(templateDir, { recursive: true });
+fs.copyFileSync(templateSource, path.join(templateDir, "report-template.html"));
 console.log(`Installed Dependency Security agent to ${target}`);
+console.log(`Installed HTML report template to ${templateDir}`);
 console.log('Reload VS Code, then select "Dependency Security" in Copilot Chat.');

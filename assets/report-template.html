@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dependency Security Report - {{SCAN_TIME}}</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 2rem; line-height: 1.5; }
+  header { margin-bottom: 1.5rem; }
+  h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+  .meta { color: #666; font-size: .85rem; }
+  .status { display: inline-block; padding: .25rem .6rem; border-radius: .4rem; font-weight: 600; font-size: .8rem; margin-bottom: .75rem; }
+  .status.findings { background: #fde2e1; color: #8a1f11; }
+  .status.clean { background: #d9f2e3; color: #0f5c33; }
+  .status.incomplete { background: #fff3cd; color: #7a5b00; }
+  section { margin-bottom: 2rem; }
+  h2 { font-size: 1.1rem; border-bottom: 1px solid #ddd; padding-bottom: .4rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+  th { cursor: pointer; user-select: none; background: #f7f7f7; position: sticky; top: 0; }
+  th.sort-asc::after { content: " \25B2"; }
+  th.sort-desc::after { content: " \25BC"; }
+  tr:hover { background: #fafafa; }
+  .sev { padding: .15rem .5rem; border-radius: .3rem; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+  .sev.critical { background: #f8d1cf; color: #7a0e0e; }
+  .sev.high { background: #fde2e1; color: #8a1f11; }
+  .sev.moderate { background: #ffe8b3; color: #7a5200; }
+  .sev.low { background: #e3e9ff; color: #1f3b8a; }
+  .filters { margin-bottom: .75rem; display: flex; gap: .5rem; align-items: center; font-size: .85rem; }
+  .filters input, .filters select { padding: .3rem .5rem; }
+  ul { padding-left: 1.2rem; }
+  code { background: #f1f1f1; padding: .1rem .3rem; border-radius: .25rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Dependency Security Report</h1>
+  <div class="meta">Repository scope: {{REPO_SCOPE}} &middot; Scan time (UTC): {{SCAN_TIME}}</div>
+  <span class="status {{STATUS_CLASS}}">{{STATUS_LABEL}}</span>
+</header>
+
+<section>
+  <h2>Coverage</h2>
+  {{COVERAGE_HTML}}
+</section>
+
+<section>
+  <h2>Findings</h2>
+  <div class="filters">
+    <label>Severity:
+      <select id="sevFilter">
+        <option value="">All</option>
+        <option>Critical</option>
+        <option>High</option>
+        <option>Moderate</option>
+        <option>Low</option>
+      </select>
+    </label>
+    <label>Search: <input id="search" type="text" placeholder="package, advisory, project..."></label>
+  </div>
+  <table id="findingsTable">
+    <thead>
+      <tr>
+        <th data-key="priority">#</th>
+        <th data-key="project">Project</th>
+        <th data-key="package">Package@Version</th>
+        <th data-key="advisory">Advisory</th>
+        <th data-key="severity">Severity</th>
+        <th data-key="scope">Direct/Transitive</th>
+        <th data-key="fixed">Fixed Version</th>
+        <th data-key="action">Recommended Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{FINDINGS_ROWS}}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Remediation Plan</h2>
+  {{REMEDIATION_HTML}}
+</section>
+
+<section>
+  <h2>Remaining Risk</h2>
+  {{REMAINING_RISK_HTML}}
+</section>
+
+<script>
+(function () {
+  var table = document.getElementById('findingsTable');
+  var tbody = table.tBodies[0];
+  var headers = table.querySelectorAll('th[data-key]');
+  var sortState = { key: null, dir: 1 };
+
+  headers.forEach(function (th) {
+    th.addEventListener('click', function () {
+      var key = th.getAttribute('data-key');
+      sortState.dir = (sortState.key === key) ? -sortState.dir : 1;
+      sortState.key = key;
+      headers.forEach(function (h) { h.classList.remove('sort-asc', 'sort-desc'); });
+      th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
+
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+      var idx = Array.prototype.indexOf.call(headers, th);
+      rows.sort(function (a, b) {
+        var av = a.children[idx].innerText.trim();
+        var bv = b.children[idx].innerText.trim();
+        return av.localeCompare(bv, undefined, { numeric: true }) * sortState.dir;
+      });
+      rows.forEach(function (r) { tbody.appendChild(r); });
+    });
+  });
+
+  function applyFilters() {
+    var sev = document.getElementById('sevFilter').value.toLowerCase();
+    var q = document.getElementById('search').value.toLowerCase();
+    Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function (row) {
+      var text = row.innerText.toLowerCase();
+      var rowSev = (row.getAttribute('data-severity') || '').toLowerCase();
+      var sevMatch = !sev || rowSev === sev;
+      var textMatch = !q || text.indexOf(q) !== -1;
+      row.style.display = (sevMatch && textMatch) ? '' : 'none';
+    });
+  }
+
+  document.getElementById('sevFilter').addEventListener('change', applyFilters);
+  document.getElementById('search').addEventListener('input', applyFilters);
+})();
+</script>
+</body>
+</html>
