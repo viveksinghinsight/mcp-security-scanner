@@ -1,0 +1,16 @@
+{
+  "name": "mcp-security-scanner",
+  "version": "1.0.0",
+  "description": "Installs the Dependency Security Copilot agent into a repository or VS Code user profile.",
+  "bin": {
+    "mcp-security-scanner": "bin/install.js"
+  },
+  "files": [
+    "bin",
+    "dependency-security.agent.md"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "UNLICENSED"
+}
