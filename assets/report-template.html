@@ -2,131 +2,444 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dependency Security Report - {{SCAN_TIME}}</title>
 <style>
-  :root { color-scheme: light dark; }
-  body { font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 2rem; line-height: 1.5; }
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f7fb;
+    --surface: #fff;
+    --surface-muted: #f7f8fb;
+    --text: #172033;
+    --muted: #657187;
+    --border: #dfe4ec;
+    --accent: #315dcc;
+    --accent-muted: #e8edff;
+    --danger: #b42318;
+    --warning: #9a6700;
+    --success: #087443;
+    --shadow: 0 12px 30px rgba(29, 42, 68, .12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 2rem;
+    line-height: 1.5;
+  }
+  main, header { max-width: 1440px; margin: 0 auto; }
   header { margin-bottom: 1.5rem; }
-  h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
-  .meta { color: #666; font-size: .85rem; }
-  .status { display: inline-block; padding: .25rem .6rem; border-radius: .4rem; font-weight: 600; font-size: .8rem; margin-bottom: .75rem; }
+  .header-top { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+  h1 { font-size: 1.6rem; margin: 0 0 .25rem; letter-spacing: -.02em; }
+  h2 { font-size: 1.1rem; margin: 0; }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .status {
+    display: inline-block; padding: .3rem .7rem; border-radius: 999px;
+    font-weight: 700; font-size: .8rem; white-space: nowrap;
+  }
   .status.findings { background: #fde2e1; color: #8a1f11; }
   .status.clean { background: #d9f2e3; color: #0f5c33; }
   .status.incomplete { background: #fff3cd; color: #7a5b00; }
-  section { margin-bottom: 2rem; }
-  h2 { font-size: 1.1rem; border-bottom: 1px solid #ddd; padding-bottom: .4rem; }
-  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid #eee; vertical-align: top; }
-  th { cursor: pointer; user-select: none; background: #f7f7f7; position: sticky; top: 0; }
+  section { margin-bottom: 1.75rem; }
+  .section-heading {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+    border-bottom: 1px solid var(--border); padding-bottom: .55rem; margin-bottom: .8rem;
+  }
+  .summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .75rem; margin: 1.25rem 0 1.75rem; }
+  .summary-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: .7rem;
+    padding: .9rem 1rem; box-shadow: 0 2px 6px rgba(29, 42, 68, .04);
+  }
+  .summary-card button {
+    appearance: none; background: none; border: 0; color: inherit; cursor: pointer;
+    display: block; font: inherit; padding: 0; text-align: left; width: 100%;
+  }
+  .summary-card button:focus-visible { outline: 3px solid var(--accent-muted); border-radius: .25rem; }
+  .summary-label { color: var(--muted); display: block; font-size: .76rem; font-weight: 600; text-transform: uppercase; }
+  .summary-value { display: block; font-size: 1.65rem; font-weight: 750; line-height: 1.2; margin-top: .2rem; }
+  .summary-card.critical .summary-value, .summary-card.high .summary-value { color: var(--danger); }
+  .summary-card.unavailable .summary-value { color: var(--warning); }
+  .filters {
+    align-items: end; background: var(--surface-muted); border: 1px solid var(--border);
+    border-radius: .65rem; display: flex; flex-wrap: wrap; gap: .65rem; margin-bottom: .8rem; padding: .75rem;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: .2rem; }
+  .filter-field label { color: var(--muted); font-size: .75rem; font-weight: 650; }
+  .filters input, .filters select, .button {
+    background: var(--surface); border: 1px solid #bcc5d4; border-radius: .4rem;
+    color: var(--text); font: inherit; min-height: 2.15rem; padding: .35rem .55rem;
+  }
+  .filters input { min-width: 240px; }
+  .button { cursor: pointer; font-size: .82rem; }
+  .button:hover { border-color: var(--accent); color: var(--accent); }
+  .button:focus-visible, .filters input:focus-visible, .filters select:focus-visible {
+    outline: 3px solid var(--accent-muted); outline-offset: 1px;
+  }
+  .result-count { color: var(--muted); font-size: .82rem; margin-left: auto; padding-bottom: .4rem; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: .65rem; overflow-x: auto; }
+  table { border-collapse: collapse; font-size: .84rem; min-width: 960px; width: 100%; }
+  th, td { border-bottom: 1px solid var(--border); padding: .65rem .7rem; text-align: left; vertical-align: top; }
+  th {
+    background: var(--surface-muted); cursor: pointer; position: sticky; top: 0;
+    user-select: none; white-space: nowrap; z-index: 1;
+  }
+  th:hover { color: var(--accent); }
+  th:focus-visible { outline: 3px solid var(--accent-muted); outline-offset: -3px; }
   th.sort-asc::after { content: " \25B2"; }
   th.sort-desc::after { content: " \25BC"; }
-  tr:hover { background: #fafafa; }
-  .sev { padding: .15rem .5rem; border-radius: .3rem; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+  tbody tr { cursor: pointer; transition: background .12s ease, box-shadow .12s ease; }
+  tbody tr:hover, tbody tr:focus { background: var(--accent-muted); }
+  tbody tr:focus { box-shadow: inset 3px 0 0 var(--accent); outline: none; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .sev, .remedy {
+    border-radius: .3rem; display: inline-block; font-size: .74rem; font-weight: 700;
+    padding: .16rem .5rem; white-space: nowrap;
+  }
   .sev.critical { background: #f8d1cf; color: #7a0e0e; }
   .sev.high { background: #fde2e1; color: #8a1f11; }
   .sev.moderate { background: #ffe8b3; color: #7a5200; }
   .sev.low { background: #e3e9ff; color: #1f3b8a; }
-  .filters { margin-bottom: .75rem; display: flex; gap: .5rem; align-items: center; font-size: .85rem; }
-  .filters input, .filters select { padding: .3rem .5rem; }
+  .remedy.fixed { background: #d9f2e3; color: #0f5c33; }
+  .remedy.mitigation { background: #e8edff; color: #24449b; }
+  .remedy.unavailable { background: #fff3cd; color: #7a5b00; }
+  .remedy.unknown { background: #edf0f5; color: #526074; }
+  .empty-state {
+    background: var(--surface); border: 1px dashed var(--border); border-radius: .65rem;
+    color: var(--muted); display: none; padding: 2rem; text-align: center;
+  }
+  .empty-state.visible { display: block; }
+  .acceptance-note {
+    background: #fff8e1; border-left: 4px solid #d99a00; border-radius: .3rem;
+    color: var(--text); margin-top: .75rem; padding: .75rem 1rem;
+  }
   ul { padding-left: 1.2rem; }
-  code { background: #f1f1f1; padding: .1rem .3rem; border-radius: .25rem; }
+  code { background: var(--surface-muted); border: 1px solid var(--border); border-radius: .25rem; padding: .1rem .3rem; }
+  .modal-backdrop {
+    align-items: center; background: rgba(15, 23, 42, .58); display: none;
+    inset: 0; justify-content: center; padding: 1rem; position: fixed; z-index: 10;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: .8rem;
+    box-shadow: var(--shadow); max-height: min(720px, 90vh); max-width: 720px;
+    overflow: auto; padding: 1.25rem; width: 100%;
+  }
+  .modal-header { align-items: flex-start; display: flex; gap: 1rem; justify-content: space-between; }
+  .modal-header h2 { font-size: 1.2rem; overflow-wrap: anywhere; }
+  .close-button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1.5rem; line-height: 1; padding: .1rem .35rem; }
+  .close-button:hover { color: var(--text); }
+  .detail-grid { display: grid; gap: .7rem 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 1rem 0; }
+  .detail { min-width: 0; }
+  .detail-label { color: var(--muted); display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+  .detail-value { overflow-wrap: anywhere; }
+  .detail-wide { grid-column: 1 / -1; }
+  @media (max-width: 800px) {
+    body { padding: 1rem; }
+    .header-top { flex-direction: column; }
+    .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .result-count { margin-left: 0; width: 100%; }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101522; --surface: #171e2d; --surface-muted: #20293a; --text: #edf2fb;
+      --muted: #aab6c9; --border: #354156; --accent: #91aaff; --accent-muted: #26375f;
+      --danger: #ff9a91; --warning: #f4c968; --success: #7de2ae;
+    }
+    .sev.critical, .sev.high { background: #552524; color: #ffc1ba; }
+    .sev.moderate { background: #51411f; color: #f7d98b; }
+    .sev.low { background: #26365d; color: #bfcaff; }
+    .remedy.fixed { background: #173d2b; color: #9ce8bd; }
+    .remedy.mitigation { background: #26375f; color: #bfcaff; }
+    .remedy.unavailable { background: #51411f; color: #f7d98b; }
+    .remedy.unknown { background: #30394b; color: #c4cede; }
+    .acceptance-note { background: #40371e; color: var(--text); }
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>Dependency Security Report</h1>
-  <div class="meta">Repository scope: {{REPO_SCOPE}} &middot; Scan time (UTC): {{SCAN_TIME}}</div>
-  <span class="status {{STATUS_CLASS}}">{{STATUS_LABEL}}</span>
+  <div class="header-top">
+    <div>
+      <h1>Dependency Security Report</h1>
+      <div class="meta">Repository scope: {{REPO_SCOPE}} &middot; Scan time (UTC): {{SCAN_TIME}}</div>
+    </div>
+    <span class="status {{STATUS_CLASS}}">{{STATUS_LABEL}}</span>
+  </div>
+  <div id="summary" class="summary-grid" aria-label="Finding summary">
+    <div class="summary-card"><button type="button" data-summary-filter=""><span class="summary-label">Total findings</span><span id="totalCount" class="summary-value">0</span></button></div>
+    <div class="summary-card critical"><button type="button" data-summary-filter="critical"><span class="summary-label">Critical</span><span id="criticalCount" class="summary-value">0</span></button></div>
+    <div class="summary-card high"><button type="button" data-summary-filter="high"><span class="summary-label">High</span><span id="highCount" class="summary-value">0</span></button></div>
+    <div class="summary-card unavailable"><button type="button" data-summary-filter="unavailable"><span class="summary-label">No verified fix</span><span id="unavailableCount" class="summary-value">0</span></button></div>
+    <div class="summary-card"><button type="button" data-summary-filter="__clear__"><span class="summary-label">Visible findings</span><span id="visibleCount" class="summary-value">0</span></button></div>
+  </div>
 </header>
 
-<section>
-  <h2>Coverage</h2>
-  {{COVERAGE_HTML}}
-</section>
+<main>
+  <section>
+    <div class="section-heading"><h2>Coverage</h2></div>
+    {{COVERAGE_HTML}}
+  </section>
 
-<section>
-  <h2>Findings</h2>
-  <div class="filters">
-    <label>Severity:
-      <select id="sevFilter">
-        <option value="">All</option>
-        <option>Critical</option>
-        <option>High</option>
-        <option>Moderate</option>
-        <option>Low</option>
-      </select>
-    </label>
-    <label>Search: <input id="search" type="text" placeholder="package, advisory, project..."></label>
+  <section>
+    <div class="section-heading">
+      <h2>Findings</h2>
+      <span class="meta">Select a row to view the issue details and next steps.</span>
+    </div>
+    <div class="filters">
+      <div class="filter-field">
+        <label for="sevFilter">Severity</label>
+        <select id="sevFilter">
+          <option value="">All severities</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="moderate">Moderate</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="remedyFilter">Remedy status</label>
+        <select id="remedyFilter">
+          <option value="">All remedy states</option>
+          <option value="fixed">Verified fix available</option>
+          <option value="mitigation">Mitigation or replacement</option>
+          <option value="unavailable">No verified fix</option>
+          <option value="unknown">Needs verification</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="search">Search</label>
+        <input id="search" type="search" placeholder="package, advisory, project..." autocomplete="off">
+      </div>
+      <button id="clearFilters" class="button" type="button">Clear filters</button>
+      <span id="resultCount" class="result-count" aria-live="polite"></span>
+    </div>
+    <div class="table-wrap">
+      <table id="findingsTable">
+        <thead>
+          <tr>
+            <th data-key="priority" tabindex="0" scope="col">#</th>
+            <th data-key="project" tabindex="0" scope="col">Project</th>
+            <th data-key="package" tabindex="0" scope="col">Package@Version</th>
+            <th data-key="advisory" tabindex="0" scope="col">Advisory</th>
+            <th data-key="severity" tabindex="0" scope="col">Severity</th>
+            <th data-key="scope" tabindex="0" scope="col">Direct/Transitive</th>
+            <th data-key="fixed" tabindex="0" scope="col">Fixed Version</th>
+            <th data-key="action" tabindex="0" scope="col">Recommended Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{FINDINGS_ROWS}}
+        </tbody>
+      </table>
+    </div>
+    <div id="emptyState" class="empty-state" role="status">No findings match the selected filters. <button id="emptyClear" class="button" type="button">Show all findings</button></div>
+  </section>
+
+  <section>
+    <div class="section-heading"><h2>Remediation Plan</h2></div>
+    {{REMEDIATION_HTML}}
+  </section>
+
+  <section>
+    <div class="section-heading"><h2>Remaining Risk</h2></div>
+    {{REMAINING_RISK_HTML}}
+  </section>
+</main>
+
+<div id="findingBackdrop" class="modal-backdrop" hidden>
+  <div id="findingDialog" class="modal" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+    <div class="modal-header">
+      <h2 id="dialogTitle">Finding details</h2>
+      <button id="closeDialog" class="close-button" type="button" aria-label="Close finding details">&times;</button>
+    </div>
+    <div class="detail-grid">
+      <div class="detail"><span class="detail-label">Project</span><span id="detailProject" class="detail-value"></span></div>
+      <div class="detail"><span class="detail-label">Severity</span><span id="detailSeverity" class="detail-value"></span></div>
+      <div class="detail"><span class="detail-label">Package</span><span id="detailPackage" class="detail-value"></span></div>
+      <div class="detail"><span class="detail-label">Scope</span><span id="detailScope" class="detail-value"></span></div>
+      <div class="detail"><span class="detail-label">Advisory</span><span id="detailAdvisory" class="detail-value"></span></div>
+      <div class="detail"><span class="detail-label">Remedy status</span><span id="detailRemedy" class="detail-value"></span></div>
+      <div class="detail detail-wide"><span class="detail-label">Fixed version</span><span id="detailFixed" class="detail-value"></span></div>
+      <div class="detail detail-wide"><span class="detail-label">Recommended action</span><span id="detailAction" class="detail-value"></span></div>
+      <div id="pathDetail" class="detail detail-wide"><span class="detail-label">Dependency path</span><span id="detailPath" class="detail-value"></span></div>
+      <div id="evidenceDetail" class="detail detail-wide"><span class="detail-label">Evidence and exposure</span><span id="detailEvidence" class="detail-value"></span></div>
+    </div>
+    <div id="acceptanceDetail" class="acceptance-note" hidden>
+      <strong>Suggested risk-acceptance text</strong>
+      <p id="detailAcceptance"></p>
+    </div>
   </div>
-  <table id="findingsTable">
-    <thead>
-      <tr>
-        <th data-key="priority">#</th>
-        <th data-key="project">Project</th>
-        <th data-key="package">Package@Version</th>
-        <th data-key="advisory">Advisory</th>
-        <th data-key="severity">Severity</th>
-        <th data-key="scope">Direct/Transitive</th>
-        <th data-key="fixed">Fixed Version</th>
-        <th data-key="action">Recommended Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{FINDINGS_ROWS}}
-    </tbody>
-  </table>
-</section>
-
-<section>
-  <h2>Remediation Plan</h2>
-  {{REMEDIATION_HTML}}
-</section>
-
-<section>
-  <h2>Remaining Risk</h2>
-  {{REMAINING_RISK_HTML}}
-</section>
+</div>
 
 <script>
 (function () {
   var table = document.getElementById('findingsTable');
   var tbody = table.tBodies[0];
   var headers = table.querySelectorAll('th[data-key]');
+  var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
   var sortState = { key: null, dir: 1 };
+  var lastFocusedRow = null;
+  var noFixPattern = /no\s+(verified\s+)?(fix|patch)|not\s+available|unavailable|none\s+verified/i;
+
+  function cellText(row, index) {
+    return row.children[index] ? row.children[index].innerText.trim() : '';
+  }
+
+  function remedyState(row) {
+    var state = (row.getAttribute('data-remedy') || '').toLowerCase();
+    if (state) return state;
+    return noFixPattern.test(cellText(row, 6)) ? 'unavailable' : 'unknown';
+  }
+
+  function updateSummary() {
+    var counts = { total: rows.length, critical: 0, high: 0, unavailable: 0, visible: 0 };
+    rows.forEach(function (row) {
+      var severity = (row.getAttribute('data-severity') || cellText(row, 4)).toLowerCase();
+      if (severity === 'critical') counts.critical++;
+      if (severity === 'high') counts.high++;
+      if (remedyState(row) === 'unavailable') counts.unavailable++;
+      if (row.style.display !== 'none') counts.visible++;
+    });
+    document.getElementById('totalCount').textContent = counts.total;
+    document.getElementById('criticalCount').textContent = counts.critical;
+    document.getElementById('highCount').textContent = counts.high;
+    document.getElementById('unavailableCount').textContent = counts.unavailable;
+    document.getElementById('visibleCount').textContent = counts.visible;
+    document.getElementById('resultCount').textContent = counts.visible + ' of ' + counts.total + ' finding' + (counts.total === 1 ? '' : 's');
+  }
+
+  function applyFilters() {
+    var severity = document.getElementById('sevFilter').value.toLowerCase();
+    var remedy = document.getElementById('remedyFilter').value.toLowerCase();
+    var query = document.getElementById('search').value.toLowerCase().trim();
+    var visible = 0;
+    rows.forEach(function (row) {
+      var rowSeverity = (row.getAttribute('data-severity') || cellText(row, 4)).toLowerCase();
+      var rowRemedy = remedyState(row);
+      var matches = (!severity || rowSeverity === severity) &&
+        (!remedy || rowRemedy === remedy) &&
+        (!query || row.innerText.toLowerCase().indexOf(query) !== -1);
+      row.style.display = matches ? '' : 'none';
+      if (matches) visible++;
+    });
+    document.getElementById('emptyState').classList.toggle('visible', visible === 0 && rows.length > 0);
+    updateSummary();
+  }
+
+  function clearFilters() {
+    document.getElementById('sevFilter').value = '';
+    document.getElementById('remedyFilter').value = '';
+    document.getElementById('search').value = '';
+    applyFilters();
+  }
+
+  function setDetail(id, value) {
+    document.getElementById(id).textContent = value || 'Not provided';
+  }
+
+  function openFinding(row) {
+    lastFocusedRow = row;
+    var cells = Array.prototype.slice.call(row.children);
+    var remedy = remedyState(row);
+    var packageName = cellText(row, 2);
+    var advisory = cellText(row, 3);
+    var acceptance = row.getAttribute('data-acceptance');
+    setDetail('dialogTitle', packageName || 'Finding details');
+    setDetail('detailProject', cellText(row, 1));
+    setDetail('detailSeverity', cellText(row, 4));
+    setDetail('detailPackage', packageName);
+    setDetail('detailScope', cellText(row, 5));
+    setDetail('detailAdvisory', advisory);
+    setDetail('detailRemedy', remedy === 'unavailable' ? 'No verified fix available' : remedy);
+    setDetail('detailFixed', cellText(row, 6));
+    setDetail('detailAction', cellText(row, 7));
+    setDetail('detailPath', row.getAttribute('data-path'));
+    setDetail('detailEvidence', row.getAttribute('data-evidence'));
+    document.getElementById('pathDetail').hidden = !row.getAttribute('data-path');
+    document.getElementById('evidenceDetail').hidden = !row.getAttribute('data-evidence');
+    if (remedy === 'unavailable') {
+      if (!acceptance) {
+        acceptance = 'Risk accepted: ' + (advisory || 'this finding') + ' affects ' + (packageName || 'the identified dependency') + '. No vendor-supported fix is currently available. The risk owner will document compensating controls, monitoring, an owner, and a review or expiry date. This acceptance does not remediate the vulnerability.';
+      }
+      setDetail('detailAcceptance', acceptance);
+      document.getElementById('acceptanceDetail').hidden = false;
+    } else {
+      document.getElementById('acceptanceDetail').hidden = true;
+    }
+    var backdrop = document.getElementById('findingBackdrop');
+    backdrop.hidden = false;
+    backdrop.classList.add('open');
+    document.getElementById('closeDialog').focus();
+  }
+
+  function closeFinding() {
+    var backdrop = document.getElementById('findingBackdrop');
+    backdrop.classList.remove('open');
+    backdrop.hidden = true;
+    if (lastFocusedRow) lastFocusedRow.focus();
+  }
 
   headers.forEach(function (th) {
-    th.addEventListener('click', function () {
+    function sortFromHeader() {
       var key = th.getAttribute('data-key');
-      sortState.dir = (sortState.key === key) ? -sortState.dir : 1;
+      sortState.dir = sortState.key === key ? -sortState.dir : 1;
       sortState.key = key;
-      headers.forEach(function (h) { h.classList.remove('sort-asc', 'sort-desc'); });
+      headers.forEach(function (header) { header.classList.remove('sort-asc', 'sort-desc'); });
       th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
-
-      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
-      var idx = Array.prototype.indexOf.call(headers, th);
+      var index = Array.prototype.indexOf.call(headers, th);
       rows.sort(function (a, b) {
-        var av = a.children[idx].innerText.trim();
-        var bv = b.children[idx].innerText.trim();
-        return av.localeCompare(bv, undefined, { numeric: true }) * sortState.dir;
+        return cellText(a, index).localeCompare(cellText(b, index), undefined, { numeric: true }) * sortState.dir;
       });
-      rows.forEach(function (r) { tbody.appendChild(r); });
+      rows.forEach(function (row) { tbody.appendChild(row); });
+    }
+    th.addEventListener('click', sortFromHeader);
+    th.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); sortFromHeader(); }
     });
   });
 
-  function applyFilters() {
-    var sev = document.getElementById('sevFilter').value.toLowerCase();
-    var q = document.getElementById('search').value.toLowerCase();
-    Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function (row) {
-      var text = row.innerText.toLowerCase();
-      var rowSev = (row.getAttribute('data-severity') || '').toLowerCase();
-      var sevMatch = !sev || rowSev === sev;
-      var textMatch = !q || text.indexOf(q) !== -1;
-      row.style.display = (sevMatch && textMatch) ? '' : 'none';
+  rows.forEach(function (row) {
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', 'Open details for ' + cellText(row, 2));
+    row.addEventListener('click', function () { openFinding(row); });
+    row.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openFinding(row); }
     });
-  }
+    var severity = (row.getAttribute('data-severity') || cellText(row, 4)).toLowerCase();
+    row.setAttribute('data-severity', severity);
+  });
 
   document.getElementById('sevFilter').addEventListener('change', applyFilters);
+  document.getElementById('remedyFilter').addEventListener('change', applyFilters);
   document.getElementById('search').addEventListener('input', applyFilters);
+  document.getElementById('clearFilters').addEventListener('click', clearFilters);
+  document.getElementById('emptyClear').addEventListener('click', clearFilters);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-summary-filter]'), function (button) {
+    button.addEventListener('click', function () {
+      var value = button.getAttribute('data-summary-filter');
+      if (value === '__clear__') {
+        clearFilters();
+        document.getElementById('findingsTable').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      document.getElementById('remedyFilter').value = value === 'unavailable' ? 'unavailable' : '';
+      document.getElementById('sevFilter').value = value === 'critical' || value === 'high' ? value : '';
+      document.getElementById('search').value = '';
+      applyFilters();
+      document.getElementById('findingsTable').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  document.getElementById('closeDialog').addEventListener('click', closeFinding);
+  document.getElementById('findingBackdrop').addEventListener('click', function (event) {
+    if (event.target === event.currentTarget) closeFinding();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !document.getElementById('findingBackdrop').hidden) closeFinding();
+  });
+  applyFilters();
 })();
 </script>
 </body>
