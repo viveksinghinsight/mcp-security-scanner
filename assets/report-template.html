@@ -46,10 +46,6 @@
     display: flex; font-size: .7rem; height: 23px; margin-left: .4rem; max-width: 250px; padding-left: .55rem; width: 100%;
   }
   .topbar-search span { margin-left: auto; padding: 0 .55rem; }
-  .topbar-actions { align-items: center; display: flex; gap: .85rem; margin-left: auto; }
-  .topbar-actions button { background: transparent; border: 0; color: inherit; cursor: pointer; font-size: .72rem; }
-  .create-project { background: #303b40 !important; border-left: 1px solid #546168 !important; padding: .58rem .75rem; }
-  .user-chip { border-left: 1px solid #546168; padding-left: .8rem; }
   .project-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem max(1rem, calc((100% - 1400px) / 2)) 0; }
   .project-identity { align-items: center; display: flex; gap: .75rem; }
   .project-icon { align-items: center; background: #f1f3f3; border: 1px solid #cbd1d3; color: #879195; display: flex; font-size: 1.3rem; height: 40px; justify-content: center; width: 40px; }
@@ -111,6 +107,7 @@
   }
   .result-count { color: var(--muted); font-size: .82rem; margin-left: auto; padding-bottom: .4rem; }
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; overflow-x: auto; }
+  .report-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; box-shadow: var(--shadow); padding: .9rem 1rem; }
   table { border-collapse: collapse; font-size: .74rem; min-width: 960px; width: 100%; }
   th, td { border-bottom: 1px solid #e5e8e9; padding: .58rem .6rem; text-align: left; vertical-align: top; }
   th {
@@ -184,11 +181,6 @@
   <div class="topbar">
     <div class="brand"><span class="brand-black">DEPENDENCY</span><span class="brand-duck">GUARD</span></div>
     <div class="topbar-search" aria-label="Report search">Search reports...<span aria-hidden="true">&#128269;</span></div>
-    <div class="topbar-actions">
-      <button class="create-project" type="button">+ Create Project</button>
-      <span aria-hidden="true">&#128276;</span>
-      <span class="user-chip">Security Team &#9662;</span>
-    </div>
   </div>
   <div class="project-header">
     <div class="project-identity">
@@ -294,13 +286,19 @@
   </section>
 
   <section id="remediation">
-    <div class="section-heading"><h2>Remediation Plan</h2></div>
-    {{REMEDIATION_HTML}}
+    <div class="section-heading">
+      <h2>Remediation Plan</h2>
+      <span class="meta">Recommended next steps</span>
+    </div>
+    <div class="report-panel">{{REMEDIATION_HTML}}</div>
   </section>
 
   <section id="risk">
-    <div class="section-heading"><h2>Remaining Risk</h2></div>
-    {{REMAINING_RISK_HTML}}
+    <div class="section-heading">
+      <h2>Remaining Risk</h2>
+      <span class="meta">Unresolved exposure and audit limitations</span>
+    </div>
+    <div class="report-panel">{{REMAINING_RISK_HTML}}</div>
   </section>
 </main>
 
