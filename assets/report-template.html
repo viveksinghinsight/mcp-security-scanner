@@ -6,83 +6,115 @@
 <title>Dependency Security Report - {{SCAN_TIME}}</title>
 <style>
   :root {
-    color-scheme: light dark;
-    --bg: #f5f7fb;
+    color-scheme: light;
+    --bg: #f3f4f5;
     --surface: #fff;
-    --surface-muted: #f7f8fb;
-    --text: #172033;
-    --muted: #657187;
-    --border: #dfe4ec;
-    --accent: #315dcc;
-    --accent-muted: #e8edff;
-    --danger: #b42318;
-    --warning: #9a6700;
-    --success: #087443;
-    --shadow: 0 12px 30px rgba(29, 42, 68, .12);
+    --surface-muted: #f7f8f8;
+    --text: #273137;
+    --muted: #6b7479;
+    --border: #d9dddf;
+    --accent: #087da1;
+    --accent-muted: #e3f2f6;
+    --danger: #a32025;
+    --warning: #c27b17;
+    --success: #287c4d;
+    --topbar: #252b2f;
+    --shadow: 0 1px 3px rgba(33, 43, 48, .12);
   }
   * { box-sizing: border-box; }
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     margin: 0;
-    padding: 2rem;
-    line-height: 1.5;
+    line-height: 1.45;
   }
   main, header { max-width: 1440px; margin: 0 auto; }
-  header { margin-bottom: 1.5rem; }
-  .header-top { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
-  h1 { font-size: 1.6rem; margin: 0 0 .25rem; letter-spacing: -.02em; }
-  h2 { font-size: 1.1rem; margin: 0; }
-  .meta { color: var(--muted); font-size: .85rem; }
-  .status {
-    display: inline-block; padding: .3rem .7rem; border-radius: 999px;
-    font-weight: 700; font-size: .8rem; white-space: nowrap;
+  header { margin-bottom: 1.2rem; }
+  h1 { font-size: 1.42rem; margin: 0 0 .15rem; letter-spacing: -.02em; }
+  h2 { font-size: 1rem; margin: 0; }
+  .meta { color: var(--muted); font-size: .76rem; }
+  .topbar {
+    align-items: center; background: var(--topbar); color: #eef2f3; display: flex;
+    gap: 1rem; min-height: 34px; padding: 0 max(1rem, calc((100% - 1440px) / 2));
   }
-  .status.findings { background: #fde2e1; color: #8a1f11; }
-  .status.clean { background: #d9f2e3; color: #0f5c33; }
-  .status.incomplete { background: #fff3cd; color: #7a5b00; }
-  section { margin-bottom: 1.75rem; }
+  .brand { font-size: .93rem; font-weight: 800; letter-spacing: .06em; white-space: nowrap; }
+  .brand-black { color: #f4f5f5; }
+  .brand-duck { color: #2997bb; }
+  .topbar-search {
+    align-items: center; background: #fff; border-radius: 2px; color: #7a8589;
+    display: flex; font-size: .7rem; height: 23px; margin-left: .4rem; max-width: 250px; padding-left: .55rem; width: 100%;
+  }
+  .topbar-search span { margin-left: auto; padding: 0 .55rem; }
+  .topbar-actions { align-items: center; display: flex; gap: .85rem; margin-left: auto; }
+  .topbar-actions button { background: transparent; border: 0; color: inherit; cursor: pointer; font-size: .72rem; }
+  .create-project { background: #303b40 !important; border-left: 1px solid #546168 !important; padding: .58rem .75rem; }
+  .user-chip { border-left: 1px solid #546168; padding-left: .8rem; }
+  .project-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem max(1rem, calc((100% - 1400px) / 2)) 0; }
+  .project-identity { align-items: center; display: flex; gap: .75rem; }
+  .project-icon { align-items: center; background: #f1f3f3; border: 1px solid #cbd1d3; color: #879195; display: flex; font-size: 1.3rem; height: 40px; justify-content: center; width: 40px; }
+  .breadcrumb { color: var(--muted); font-size: .72rem; margin-bottom: .15rem; }
+  .breadcrumb strong { color: var(--accent); }
+  .project-meta { color: var(--muted); font-size: .7rem; margin-top: .2rem; }
+  .project-meta b { color: var(--text); font-weight: 600; }
+  .tab-nav { display: flex; gap: 1.25rem; margin-top: .9rem; }
+  .tab-nav a { border-bottom: 3px solid transparent; color: #5f6b70; font-size: .75rem; padding: .55rem .1rem .5rem; text-decoration: none; }
+  .tab-nav a.active { border-bottom-color: var(--accent); color: var(--text); font-weight: 700; }
+  .page-content { padding: 1.25rem 1rem 2rem; }
+  .status { display: inline-block; padding: .25rem .65rem; border-radius: 2px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+  .status.findings { background: #f8dedf; color: #8e1c20; }
+  .status.clean { background: #dcefe4; color: #21643e; }
+  .status.incomplete { background: #fff1d2; color: #81590f; }
+  section { margin-bottom: 1.25rem; }
   .section-heading {
     display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
-    border-bottom: 1px solid var(--border); padding-bottom: .55rem; margin-bottom: .8rem;
+    border-bottom: 1px solid var(--border); padding-bottom: .5rem; margin-bottom: .7rem;
   }
-  .summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .75rem; margin: 1.25rem 0 1.75rem; }
+  .summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .65rem; margin: 1rem 0 1.2rem; }
   .summary-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: .7rem;
-    padding: .9rem 1rem; box-shadow: 0 2px 6px rgba(29, 42, 68, .04);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+    padding: .75rem .85rem; box-shadow: var(--shadow);
   }
   .summary-card button {
     appearance: none; background: none; border: 0; color: inherit; cursor: pointer;
     display: block; font: inherit; padding: 0; text-align: left; width: 100%;
   }
   .summary-card button:focus-visible { outline: 3px solid var(--accent-muted); border-radius: .25rem; }
-  .summary-label { color: var(--muted); display: block; font-size: .76rem; font-weight: 600; text-transform: uppercase; }
-  .summary-value { display: block; font-size: 1.65rem; font-weight: 750; line-height: 1.2; margin-top: .2rem; }
+  .summary-label { color: var(--muted); display: block; font-size: .68rem; font-weight: 700; text-transform: uppercase; }
+  .summary-value { display: block; font-size: 1.55rem; font-weight: 700; line-height: 1.2; margin-top: .2rem; }
   .summary-card.critical .summary-value, .summary-card.high .summary-value { color: var(--danger); }
   .summary-card.unavailable .summary-value { color: var(--warning); }
+  .overview-grid { display: grid; gap: .8rem; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr); }
+  .overview-card { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); min-height: 135px; padding: .8rem; }
+  .overview-card h3 { font-size: .76rem; margin: 0 0 .6rem; text-transform: uppercase; }
+  .risk-row { align-items: center; display: grid; font-size: .72rem; gap: .55rem; grid-template-columns: 58px 1fr 30px; margin: .55rem 0; }
+  .risk-track { background: #edf0f0; height: 10px; }
+  .risk-bar { background: #adb6b9; display: block; height: 100%; min-width: 2px; transition: width .2s ease; }
+  .risk-bar.critical, .risk-bar.high { background: #a32025; }
+  .risk-bar.moderate { background: #e0a13c; }
+  .risk-bar.low { background: #5098ac; }
   .filters {
-    align-items: end; background: var(--surface-muted); border: 1px solid var(--border);
-    border-radius: .65rem; display: flex; flex-wrap: wrap; gap: .65rem; margin-bottom: .8rem; padding: .75rem;
+    align-items: end; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 2px; display: flex; flex-wrap: wrap; gap: .55rem; margin-bottom: .65rem; padding: .65rem;
   }
   .filter-field { display: flex; flex-direction: column; gap: .2rem; }
   .filter-field label { color: var(--muted); font-size: .75rem; font-weight: 650; }
   .filters input, .filters select, .button {
-    background: var(--surface); border: 1px solid #bcc5d4; border-radius: .4rem;
-    color: var(--text); font: inherit; min-height: 2.15rem; padding: .35rem .55rem;
+    background: var(--surface); border: 1px solid #bfc7ca; border-radius: 2px;
+    color: var(--text); font: inherit; min-height: 2rem; padding: .3rem .5rem;
   }
   .filters input { min-width: 240px; }
-  .button { cursor: pointer; font-size: .82rem; }
+  .button { cursor: pointer; font-size: .75rem; }
   .button:hover { border-color: var(--accent); color: var(--accent); }
   .button:focus-visible, .filters input:focus-visible, .filters select:focus-visible {
     outline: 3px solid var(--accent-muted); outline-offset: 1px;
   }
   .result-count { color: var(--muted); font-size: .82rem; margin-left: auto; padding-bottom: .4rem; }
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: .65rem; overflow-x: auto; }
-  table { border-collapse: collapse; font-size: .84rem; min-width: 960px; width: 100%; }
-  th, td { border-bottom: 1px solid var(--border); padding: .65rem .7rem; text-align: left; vertical-align: top; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; overflow-x: auto; }
+  table { border-collapse: collapse; font-size: .74rem; min-width: 960px; width: 100%; }
+  th, td { border-bottom: 1px solid #e5e8e9; padding: .58rem .6rem; text-align: left; vertical-align: top; }
   th {
-    background: var(--surface-muted); cursor: pointer; position: sticky; top: 0;
+    background: #f0f2f2; color: #59666b; cursor: pointer; font-size: .68rem; position: sticky; top: 0;
     user-select: none; white-space: nowrap; z-index: 1;
   }
   th:hover { color: var(--accent); }
@@ -90,11 +122,11 @@
   th.sort-asc::after { content: " \25B2"; }
   th.sort-desc::after { content: " \25BC"; }
   tbody tr { cursor: pointer; transition: background .12s ease, box-shadow .12s ease; }
-  tbody tr:hover, tbody tr:focus { background: var(--accent-muted); }
+  tbody tr:hover, tbody tr:focus { background: #f1f8fa; }
   tbody tr:focus { box-shadow: inset 3px 0 0 var(--accent); outline: none; }
   tbody tr:last-child td { border-bottom: 0; }
   .sev, .remedy {
-    border-radius: .3rem; display: inline-block; font-size: .74rem; font-weight: 700;
+    border-radius: 2px; display: inline-block; font-size: .68rem; font-weight: 700;
     padding: .16rem .5rem; white-space: nowrap;
   }
   .sev.critical { background: #f8d1cf; color: #7a0e0e; }
@@ -106,12 +138,12 @@
   .remedy.unavailable { background: #fff3cd; color: #7a5b00; }
   .remedy.unknown { background: #edf0f5; color: #526074; }
   .empty-state {
-    background: var(--surface); border: 1px dashed var(--border); border-radius: .65rem;
+    background: var(--surface); border: 1px dashed var(--border); border-radius: 2px;
     color: var(--muted); display: none; padding: 2rem; text-align: center;
   }
   .empty-state.visible { display: block; }
   .acceptance-note {
-    background: #fff8e1; border-left: 4px solid #d99a00; border-radius: .3rem;
+    background: #fff8e1; border-left: 4px solid #d99a00; border-radius: 2px;
     color: var(--text); margin-top: .75rem; padding: .75rem 1rem;
   }
   ul { padding-left: 1.2rem; }
@@ -122,7 +154,7 @@
   }
   .modal-backdrop.open { display: flex; }
   .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: .8rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 3px;
     box-shadow: var(--shadow); max-height: min(720px, 90vh); max-width: 720px;
     overflow: auto; padding: 1.25rem; width: 100%;
   }
@@ -136,55 +168,79 @@
   .detail-value { overflow-wrap: anywhere; }
   .detail-wide { grid-column: 1 / -1; }
   @media (max-width: 800px) {
-    body { padding: 1rem; }
+    .topbar { padding: 0 .75rem; }
+    .topbar-search { display: none; }
+    .project-header { padding-left: .75rem; padding-right: .75rem; }
+    .page-content { padding-left: .75rem; padding-right: .75rem; }
     .header-top { flex-direction: column; }
     .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .overview-grid { grid-template-columns: 1fr; }
     .result-count { margin-left: 0; width: 100%; }
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #101522; --surface: #171e2d; --surface-muted: #20293a; --text: #edf2fb;
-      --muted: #aab6c9; --border: #354156; --accent: #91aaff; --accent-muted: #26375f;
-      --danger: #ff9a91; --warning: #f4c968; --success: #7de2ae;
-    }
-    .sev.critical, .sev.high { background: #552524; color: #ffc1ba; }
-    .sev.moderate { background: #51411f; color: #f7d98b; }
-    .sev.low { background: #26365d; color: #bfcaff; }
-    .remedy.fixed { background: #173d2b; color: #9ce8bd; }
-    .remedy.mitigation { background: #26375f; color: #bfcaff; }
-    .remedy.unavailable { background: #51411f; color: #f7d98b; }
-    .remedy.unknown { background: #30394b; color: #c4cede; }
-    .acceptance-note { background: #40371e; color: var(--text); }
   }
 </style>
 </head>
 <body>
 <header>
-  <div class="header-top">
-    <div>
-      <h1>Dependency Security Report</h1>
-      <div class="meta">Repository scope: {{REPO_SCOPE}} &middot; Scan time (UTC): {{SCAN_TIME}}</div>
+  <div class="topbar">
+    <div class="brand"><span class="brand-black">DEPENDENCY</span><span class="brand-duck">GUARD</span></div>
+    <div class="topbar-search" aria-label="Report search">Search reports...<span aria-hidden="true">&#128269;</span></div>
+    <div class="topbar-actions">
+      <button class="create-project" type="button">+ Create Project</button>
+      <span aria-hidden="true">&#128276;</span>
+      <span class="user-chip">Security Team &#9662;</span>
     </div>
-    <span class="status {{STATUS_CLASS}}">{{STATUS_LABEL}}</span>
   </div>
-  <div id="summary" class="summary-grid" aria-label="Finding summary">
-    <div class="summary-card"><button type="button" data-summary-filter=""><span class="summary-label">Total findings</span><span id="totalCount" class="summary-value">0</span></button></div>
-    <div class="summary-card critical"><button type="button" data-summary-filter="critical"><span class="summary-label">Critical</span><span id="criticalCount" class="summary-value">0</span></button></div>
-    <div class="summary-card high"><button type="button" data-summary-filter="high"><span class="summary-label">High</span><span id="highCount" class="summary-value">0</span></button></div>
-    <div class="summary-card unavailable"><button type="button" data-summary-filter="unavailable"><span class="summary-label">No verified fix</span><span id="unavailableCount" class="summary-value">0</span></button></div>
-    <div class="summary-card"><button type="button" data-summary-filter="__clear__"><span class="summary-label">Visible findings</span><span id="visibleCount" class="summary-value">0</span></button></div>
+  <div class="project-header">
+    <div class="project-identity">
+      <div class="project-icon" aria-hidden="true">&#9673;</div>
+      <div>
+        <div class="breadcrumb">Projects &rsaquo; <strong>{{REPO_SCOPE}}</strong></div>
+        <h1>Dependency Security Report</h1>
+        <div class="project-meta">Scan time: <b>{{SCAN_TIME}} UTC</b> &middot; Status: <span class="status {{STATUS_CLASS}}">{{STATUS_LABEL}}</span></div>
+      </div>
+    </div>
+    <nav class="tab-nav" aria-label="Report sections">
+      <a class="active" href="#overview">Overview</a>
+      <a href="#findings">Findings</a>
+      <a href="#remediation">Remediation</a>
+      <a href="#risk">Remaining Risk</a>
+    </nav>
+  </div>
+  <div class="page-content">
+    <div id="summary" class="summary-grid" aria-label="Finding summary">
+      <div class="summary-card"><button type="button" data-summary-filter=""><span class="summary-label">Total findings</span><span id="totalCount" class="summary-value">0</span></button></div>
+      <div class="summary-card critical"><button type="button" data-summary-filter="critical"><span class="summary-label">Critical</span><span id="criticalCount" class="summary-value">0</span></button></div>
+      <div class="summary-card high"><button type="button" data-summary-filter="high"><span class="summary-label">High</span><span id="highCount" class="summary-value">0</span></button></div>
+      <div class="summary-card unavailable"><button type="button" data-summary-filter="unavailable"><span class="summary-label">No verified fix</span><span id="unavailableCount" class="summary-value">0</span></button></div>
+      <div class="summary-card"><button type="button" data-summary-filter="__clear__"><span class="summary-label">Visible findings</span><span id="visibleCount" class="summary-value">0</span></button></div>
+    </div>
   </div>
 </header>
 
-<main>
-  <section>
-    <div class="section-heading"><h2>Coverage</h2></div>
-    {{COVERAGE_HTML}}
+<main class="page-content">
+  <section id="overview">
+    <div class="section-heading">
+      <h2>Project overview</h2>
+      <span class="meta">Dependency inventory and security posture</span>
+    </div>
+    <div class="overview-grid">
+      <div class="overview-card coverage-card">
+        <h3>Coverage</h3>
+        {{COVERAGE_HTML}}
+      </div>
+      <div class="overview-card risk-card">
+        <h3>Security risk distribution</h3>
+        <div class="risk-row"><span>Critical</span><span class="risk-track"><span id="criticalBar" class="risk-bar critical" style="width: 2%"></span></span><strong id="criticalRiskCount">0</strong></div>
+        <div class="risk-row"><span>High</span><span class="risk-track"><span id="highBar" class="risk-bar high" style="width: 2%"></span></span><strong id="highRiskCount">0</strong></div>
+        <div class="risk-row"><span>Moderate</span><span class="risk-track"><span id="moderateBar" class="risk-bar moderate" style="width: 2%"></span></span><strong id="moderateRiskCount">0</strong></div>
+        <div class="risk-row"><span>Low</span><span class="risk-track"><span id="lowBar" class="risk-bar low" style="width: 2%"></span></span><strong id="lowRiskCount">0</strong></div>
+      </div>
+    </div>
   </section>
 
-  <section>
+  <section id="findings">
     <div class="section-heading">
-      <h2>Findings</h2>
+      <h2>Components and findings</h2>
       <span class="meta">Select a row to view the issue details and next steps.</span>
     </div>
     <div class="filters">
@@ -221,8 +277,8 @@
           <tr>
             <th data-key="priority" tabindex="0" scope="col">#</th>
             <th data-key="project" tabindex="0" scope="col">Project</th>
-            <th data-key="package" tabindex="0" scope="col">Package@Version</th>
-            <th data-key="advisory" tabindex="0" scope="col">Advisory</th>
+            <th data-key="package" tabindex="0" scope="col">Component@Version</th>
+            <th data-key="advisory" tabindex="0" scope="col">Advisory / Match</th>
             <th data-key="severity" tabindex="0" scope="col">Severity</th>
             <th data-key="scope" tabindex="0" scope="col">Direct/Transitive</th>
             <th data-key="fixed" tabindex="0" scope="col">Fixed Version</th>
@@ -237,12 +293,12 @@
     <div id="emptyState" class="empty-state" role="status">No findings match the selected filters. <button id="emptyClear" class="button" type="button">Show all findings</button></div>
   </section>
 
-  <section>
+  <section id="remediation">
     <div class="section-heading"><h2>Remediation Plan</h2></div>
     {{REMEDIATION_HTML}}
   </section>
 
-  <section>
+  <section id="risk">
     <div class="section-heading"><h2>Remaining Risk</h2></div>
     {{REMAINING_RISK_HTML}}
   </section>
@@ -294,11 +350,13 @@
   }
 
   function updateSummary() {
-    var counts = { total: rows.length, critical: 0, high: 0, unavailable: 0, visible: 0 };
+    var counts = { total: rows.length, critical: 0, high: 0, moderate: 0, low: 0, unavailable: 0, visible: 0 };
     rows.forEach(function (row) {
       var severity = (row.getAttribute('data-severity') || cellText(row, 4)).toLowerCase();
       if (severity === 'critical') counts.critical++;
       if (severity === 'high') counts.high++;
+      if (severity === 'moderate') counts.moderate++;
+      if (severity === 'low') counts.low++;
       if (remedyState(row) === 'unavailable') counts.unavailable++;
       if (row.style.display !== 'none') counts.visible++;
     });
@@ -307,6 +365,10 @@
     document.getElementById('highCount').textContent = counts.high;
     document.getElementById('unavailableCount').textContent = counts.unavailable;
     document.getElementById('visibleCount').textContent = counts.visible;
+    ['critical', 'high', 'moderate', 'low'].forEach(function (severity) {
+      document.getElementById(severity + 'RiskCount').textContent = counts[severity];
+      document.getElementById(severity + 'Bar').style.width = (counts.total ? Math.max(2, counts[severity] / counts.total * 100) : 2) + '%';
+    });
     document.getElementById('resultCount').textContent = counts.visible + ' of ' + counts.total + ' finding' + (counts.total === 1 ? '' : 's');
   }
 
